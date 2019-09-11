@@ -13,4 +13,6 @@ object Constants {
     val KEY_QUERY_TYPE = "query_type"
     val KEY_LANGUAGE = "language"
     val KEY_REPO_SEARCH = "query_repo"
+
+    val BASE_URL = "https://api.github.com/"
 }
