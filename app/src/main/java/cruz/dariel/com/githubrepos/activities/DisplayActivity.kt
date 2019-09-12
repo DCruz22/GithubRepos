@@ -32,7 +32,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class DisplayActivity : AppCompatActivity(), DisplayAdapter.Listener, NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var displayAdapter: DisplayAdapter
     private var browsedRepositories: List<Repository> = mutableListOf()
@@ -192,6 +192,31 @@ class DisplayActivity : AppCompatActivity(), NavigationView.OnNavigationItemSele
             closeDrawer()
         else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onItemClicked(item: Repository?){
+        item?.let {
+            val url = it.htmlUrl
+            val webpage = Uri.parse(url)
+            val intent = Intent(Intent.ACTION_VIEW, webpage)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            }
+        }
+    }
+
+    override fun onBookmarkImgClicked(item: Repository?){
+        current?.let {
+            val realm = Realm.getDefaultInstance()
+            realm.executeTransactionAsync ( {
+                realm -> realm.copyToRealmOrUpdate(current)
+            }, {
+                    context.toast("Bookmarked Successfully")
+                }, {
+                    context.toast("Error Ocurred")
+                }
+            )
         }
     }
 

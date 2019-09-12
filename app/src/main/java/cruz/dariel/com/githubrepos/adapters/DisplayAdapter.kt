@@ -15,9 +15,15 @@ import io.realm.Realm
 import kotlinx.android.synthetic.main.list_item.view.*
 
 
-class DisplayAdapter(private val context: Context, private var repositoryList: List<Repository>) : RecyclerView.Adapter<DisplayAdapter.MyViewHolder>() {
+class DisplayAdapter(private val listener: Listener, private var repositoryList: List<Repository>) : RecyclerView.Adapter<DisplayAdapter.MyViewHolder>() {
+
+    interface Listener{
+        fun onItemClicked()
+        fun onBookmarkImgClicked()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+        Context context = parent.getContext()
         val view = LayoutInflater.from(context).inflate(R.layout.list_item, parent, false)
         return MyViewHolder(view)
     }
@@ -37,25 +43,16 @@ class DisplayAdapter(private val context: Context, private var repositoryList: L
         notifyDataSetChanged()
     }
 
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class MyViewHolder(itemView: View, listener: Listener) : RecyclerView.ViewHolder(itemView) {
 
         private var pos: Int = 0
         private var current: Repository? = null
 
         init {
 
-            itemView.imgBookmark.setOnClickListener { bookmarkRepository(current) }
+            itemView.imgBookmark.setOnClickListener { listener.onBookmarkImgClicked(current) }
 
-            itemView.setOnClickListener {
-                current?.let {
-                    val url = it.htmlUrl
-                    val webpage = Uri.parse(url)
-                    val intent = Intent(Intent.ACTION_VIEW, webpage)
-                    if (intent.resolveActivity(context.packageManager) != null) {
-                        context.startActivity(intent)
-                    }
-                }
-            }
+            itemView.setOnClickListener {listener.onItemClicked(current)}
         }
 
         fun setData(current: Repository?, position: Int) {
@@ -70,20 +67,7 @@ class DisplayAdapter(private val context: Context, private var repositoryList: L
             this.pos = position
             this.current = current
         }
-
-        private fun bookmarkRepository(current: Repository?) {
-            current?.let {
-                val realm = Realm.getDefaultInstance()
-                realm.executeTransactionAsync ( {
-                    realm -> realm.copyToRealmOrUpdate(current)
-                }, {
-                        context.toast("Bookmarked Successfully")
-                    }, {
-                        context.toast("Error Ocurred")
-                    }
-                )
-            }
-        }
+    }
     }
 
     companion object {
