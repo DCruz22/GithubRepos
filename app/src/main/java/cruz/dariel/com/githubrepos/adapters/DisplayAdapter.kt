@@ -35,7 +35,6 @@ class DisplayAdapter(private val listener: Listener, private var repositoryList:
 
     override fun getItemCount(): Int = repositoryList.size
 
-
     fun swap(dataList: List<Repository>) {
         if (dataList.isEmpty())
             context.toast("No Items Found")
