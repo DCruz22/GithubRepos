@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import com.sriyank.githubrepos.R
+import cruz.dariel.com.githubrepos.R
 
 import cruz.dariel.com.githubrepos.app.Constants
 import cruz.dariel.com.githubrepos.extensions.isNotEmpty

@@ -1,6 +1,8 @@
 package cruz.dariel.com.githubrepos.activities
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
@@ -11,17 +13,17 @@ import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
-import com.sriyank.githubrepos.R
+import cruz.dariel.com.githubrepos.R
 
 import cruz.dariel.com.githubrepos.adapters.DisplayAdapter
 import cruz.dariel.com.githubrepos.app.Constants
+import cruz.dariel.com.githubrepos.app.MyApplication
 import cruz.dariel.com.githubrepos.extensions.showErrorMessage
 import cruz.dariel.com.githubrepos.extensions.toast
 import cruz.dariel.com.githubrepos.models.Repository
 import cruz.dariel.com.githubrepos.models.SearchResponse
+import cruz.dariel.com.githubrepos.models.repos.RepositoryRepo
 import cruz.dariel.com.githubrepos.retrofit.GithubAPIService
-import cruz.dariel.com.githubrepos.retrofit.RetrofitClient
-import io.realm.Realm
 
 import java.util.HashMap
 
@@ -30,25 +32,31 @@ import kotlinx.android.synthetic.main.header.view.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import javax.inject.Inject
 
 
 class DisplayActivity : AppCompatActivity(), DisplayAdapter.Listener, NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var displayAdapter: DisplayAdapter
     private var browsedRepositories: List<Repository> = mutableListOf()
-    private val githubApiService: GithubAPIService by lazy {
-        RetrofitClient.githubAPIService
-    }
+
+    @Inject
+    lateinit var githubApiService: GithubAPIService
+
+    @Inject
+    lateinit var repositoryRepo: RepositoryRepo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_display)
 
+        MyApplication().getComponent(applicationContext).inject(this)
+
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar!!.title = "Showing Browsed Results"
 
-        setAppUserName();
+        setAppUserName()
 
         val layoutManager = LinearLayoutManager(this)
         layoutManager.orientation = LinearLayoutManager.VERTICAL
@@ -146,7 +154,7 @@ class DisplayActivity : AppCompatActivity(), DisplayAdapter.Listener, Navigation
     }
 
     private fun setupRecyclerView(items: List<Repository>) {
-        displayAdapter = DisplayAdapter(this, items)
+        displayAdapter = DisplayAdapter(this, this, items)
         recyclerView.adapter = displayAdapter
     }
 
@@ -156,31 +164,18 @@ class DisplayActivity : AppCompatActivity(), DisplayAdapter.Listener, Navigation
 
         when (menuItem.itemId) {
 
-            R.id.item_bookmark -> { consumeMenuEvents({showBookmarks()}, "Showing Bookmarks")}
+            R.id.item_bookmark -> { consumeMenuEvents(repositoryRepo.findAll(), "Showing Bookmarks")}
 
-            R.id.item_browsed_results -> {consumeMenuEvents({ showBrowsedResults()},"Showing Browsed Results")}
+            R.id.item_browsed_results -> {consumeMenuEvents(browsedRepositories,"Showing Browsed Results")}
         }
 
         return true
     }
 
-    private inline fun consumeMenuEvents(myFunc: () -> Unit, title: String){
+    private inline fun consumeMenuEvents(items: List<Repository>, title: String){
         closeDrawer()
-        myFunc()
+        displayAdapter.swap(items)
         supportActionBar!!.title = title
-    }
-
-    private fun showBrowsedResults() {
-        displayAdapter.swap(browsedRepositories)
-    }
-
-    private fun showBookmarks() {
-        val realm = Realm.getDefaultInstance()
-
-        realm.executeTransaction { realm ->
-            val bookMarkedRepoList =  realm.where(Repository::class.java).findAll()
-            displayAdapter.swap(bookMarkedRepoList)
-        }
     }
 
     private fun closeDrawer() {
@@ -200,25 +195,22 @@ class DisplayActivity : AppCompatActivity(), DisplayAdapter.Listener, Navigation
             val url = it.htmlUrl
             val webpage = Uri.parse(url)
             val intent = Intent(Intent.ACTION_VIEW, webpage)
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
             }
         }
     }
 
-    override fun onBookmarkImgClicked(item: Repository?){
-        current?.let {
-            val realm = Realm.getDefaultInstance()
-            realm.executeTransactionAsync ( {
-                realm -> realm.copyToRealmOrUpdate(current)
-            }, {
-                    context.toast("Bookmarked Successfully")
-                }, {
-                    context.toast("Error Ocurred")
-                }
-            )
+    override fun onBookmarkImgClicked(item: Repository?) {
+        val action = repositoryRepo.bookmarkRepo(item)
+
+        if(action == 1){
+            toast("Added to Bookmarks")
+        }else{
+            toast("Removed from Bookmarks")
         }
     }
+
 
     companion object {
 

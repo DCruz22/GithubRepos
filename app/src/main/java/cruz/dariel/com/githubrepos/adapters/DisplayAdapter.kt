@@ -1,31 +1,27 @@
 package cruz.dariel.com.githubrepos.adapters
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 
-import com.sriyank.githubrepos.R
+import cruz.dariel.com.githubrepos.R
 import cruz.dariel.com.githubrepos.extensions.toast
 import cruz.dariel.com.githubrepos.models.Repository
-import io.realm.Realm
 import kotlinx.android.synthetic.main.list_item.view.*
 
 
-class DisplayAdapter(private val listener: Listener, private var repositoryList: List<Repository>) : RecyclerView.Adapter<DisplayAdapter.MyViewHolder>() {
+class DisplayAdapter(private val listener: Listener, private val context: Context, private var repositoryList: List<Repository>) : RecyclerView.Adapter<DisplayAdapter.MyViewHolder>() {
 
     interface Listener{
-        fun onItemClicked()
-        fun onBookmarkImgClicked()
+        fun onItemClicked(current: Repository?)
+        fun onBookmarkImgClicked(current: Repository?)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        Context context = parent.getContext()
         val view = LayoutInflater.from(context).inflate(R.layout.list_item, parent, false)
-        return MyViewHolder(view)
+        return MyViewHolder(view, listener)
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
@@ -67,7 +63,7 @@ class DisplayAdapter(private val listener: Listener, private var repositoryList:
             this.current = current
         }
     }
-    }
+
 
     companion object {
 

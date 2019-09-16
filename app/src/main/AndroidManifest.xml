@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-		  package="com.sriyank.githubrepos">
+		  package="cruz.dariel.com.githubrepos">
 
 	<uses-permission android:name="android.permission.INTERNET"/>
 
 	<application
-		android:name="cruz.dariel.com.githubrepos.app.MyApplication"
+		android:name=".app.MyApplication"
 		android:allowBackup="true"
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"

@@ -3,7 +3,7 @@ package cruz.dariel.com.githubrepos.modules
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import cruz.dariel.com.githubrepos.app.Constants
-import cruz.dariel.com.githubrepos.retrofit.RetrofitClient
+import cruz.dariel.com.githubrepos.retrofit.GithubAPIService
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
@@ -13,8 +13,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 class GithubServiceModule{
 
     @Provides
-    fun provideRetrofitClient(retrofit: Retrofit) : RetrofitClient{
-        return retrofit.create(RetrofitClient::class.java)
+    fun provideRetrofitClient(retrofit: Retrofit) : GithubAPIService {
+        return retrofit.create(GithubAPIService::class.java)
     }
 }
 

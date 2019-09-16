@@ -1,11 +1,13 @@
 package cruz.dariel.com.githubrepos.models.repos
 
+import android.content.Context
+import cruz.dariel.com.githubrepos.extensions.toast
 import cruz.dariel.com.githubrepos.models.Repository
 import io.realm.Realm
 
 class RepositoryRepo(private val realm: Realm) {
 
-    fun find(id: int): Repository? {
+    fun findById(id: Int): Repository? {
         return realm.where(Repository::class.java).equalTo("id", id).findFirst()
     }
 
@@ -14,23 +16,32 @@ class RepositoryRepo(private val realm: Realm) {
     }
 
     fun addRepo(item: Repository?) {
-        current?.let {
+        item?.let {
             realm.executeTransactionAsync ( {
-                realm -> realm.copyToRealmOrUpdate(current)
+                realm -> realm.copyToRealmOrUpdate(item)
             }, {
-                    context.toast("Bookmarked Successfully")
                 }, {
-                    context.toast("Error Ocurred")
                 }
             )
         }
     }
 
-    fun deleteById(id: int) {
+    fun deleteRepoById(id: Int) {
         realm.beginTransaction()
-        val results = realm.where(NoteDto::class.java!!).equalTo("id", id).findAll()
-        results.deleteAllFromRealm()
+        val result = realm.where(Repository::class.java).equalTo("id", id).findFirst()
+        result?.deleteFromRealm()
         realm.commitTransaction()
     }
 
+    fun bookmarkRepo(repo: Repository?) : Int{
+        val d = this.findById(repo?.id?:0)
+
+        if (d != null){
+            this.deleteRepoById(d.id)
+            return 0
+        }
+
+        this.addRepo(repo)
+        return 1
+    }
 }

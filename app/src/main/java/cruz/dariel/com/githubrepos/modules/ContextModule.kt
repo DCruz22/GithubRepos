@@ -9,7 +9,7 @@ class ContextModule(val context: Context){
 
     @Provides
     fun provideContext() : Context{
-        return context;
+        return context
     }
 
 }
